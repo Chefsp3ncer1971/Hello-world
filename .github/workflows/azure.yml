@@ -1,0 +1,65 @@
+# This workflow will build and push a node.js application to an Azure Web App when a release is created.
+#
+# This workflow assumes you have already created the target Azure App Service web app.
+# For instructions see https://docs.microsoft.com/azure/app-service/app-service-plan-manage#create-an-app-service-plan
+#
+# To configure this workflow:
+#
+# 1. Set up a secret in your repository named AZURE_WEBAPP_PUBLISH_PROFILE with the value of your Azure publish profile.
+#    For instructions on obtaining the publish profile see: https://docs.microsoft.com/azure/app-service/deploy-github-actions#configure-the-github-secret
+#
+# 2. Change the values for the AZURE_WEBAPP_NAME, AZURE_WEBAPP_PACKAGE_PATH and NODE_VERSION environment variables  (below).
+#
+# For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
+# For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
+on:
+  release:
+    types: [created]
+
+env:
+  AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+  NODE_VERSION: '10.x'                # set this to the node version to use
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - name: npm install, build, and test
+      run: |
+        # Build and test the project, then
+        # deploy to Azure Web App.
+        npm install
+        npm run build --if-present
+        npm run test --if-present
+    - name: 'Deploy to Azure WebApp'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+- name: Setup .NET Core SDK
+  uses: actions/setup-dotnet@v1.7.2
+  with:
+    # SDK version to use. Examples: 2.2.104, 3.1, 3.1.x
+    dotnet-version: # optional
+    # Optional package source for which to set up authentication. Will consult any existing NuGet.config in the root of the repo and provide a temporary NuGet.config using the NUGET_AUTH_TOKEN environment variable as a ClearTextPassword
+    source-url: # optional
+    # Optional OWNER for using packages from GitHub Package Registry organizations/users other than the current repository's owner. Only used if a GPR URL is also provided in source-url
+    owner: # optional
+    # Optional NuGet.config location, if your NuGet.config isn't located in the root of the repo.
+    config-file: # optional- name: Archives Check
+  # You may pin to the exact commit or the version.
+  # uses: jpetrucciani/archives-check@3d09fc515137a781eda086f396f1163ea1dd6bf2
+  uses: jpetrucciani/archives-check@0.12
+  with:
+    # File or directory to run archives on
+    path: # optional, default is .
+    # Comma separated list of rules to disable
+    disable: # optional, default is 
